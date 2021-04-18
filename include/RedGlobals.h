@@ -25,7 +25,7 @@
 #define TEMPERATURE_PRECISION 9           // Lower resolution
 #endif
 
-#define VERSION "V1.1-PIO"
+#define VERSION "V0.2B"             // N.B: document changes in README.md
 #define MQTT_TOPIC_PREFIX "irrigation" // prefix for all MQTT topics
 
 // in WiFiConfigurations.ino
@@ -35,7 +35,6 @@ extern char mqttServer[];
 extern char mqttPort[];
 extern char mqttUser[];
 extern char mqttPwd[];
-extern char numberOfLED[]; // nunber of leds in the strings
 void configureESP();       // load configuration from FLASH & configure WIFI
 void checkConnection(); // check WIFI connection
 void writeConfigToDisk();
@@ -44,10 +43,6 @@ void configureOTA(char *hostName);
 // in MQTT
 extern PubSubClient mqtt_client;
 extern char mqtt_topic[];
-extern char mqtt_temperature_topic[];
-extern char mqtt_outdoortemperature_topic[];
-extern char mqtt_doorbell_topic[];
-extern char mqtt_garagedoor_topic[];
 extern char mqtt_debug_topic[];
 extern char mqtt_debug_set_topic[];
 void configureMQTT();
