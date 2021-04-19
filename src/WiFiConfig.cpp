@@ -38,6 +38,13 @@ bool otaInProgress; // flags if OTA is in progress
 //for LED status
 Ticker wticker;
 
+//define your default values here, if there are different values in config.json, they are overwritten.
+char deviceLocation[64] = "NEW";
+char mqttServer[64] = "RyeManorPi.local";
+char mqttPort[16] = "1883";
+char mqttUser[64] = "";
+char mqttPwd[64] = "";
+
 /*
  * ********************************************************************************
 
@@ -46,12 +53,6 @@ Ticker wticker;
  * ********************************************************************************
 */
 
-//define your default values here, if there are different values in config.json, they are overwritten.
-char deviceLocation[64] = "NEW";
-char mqttServer[64] = "192.168.1.2";
-char mqttPort[16] = "1883";
-char mqttUser[64] = "";
-char mqttPwd[64] = "";
 
 // The extra parameters to be configured (can be either global or just in the setup)
 // After connecting, parameter.getValue() will get you the configured value
@@ -66,16 +67,18 @@ WiFiManagerParameter custom_mqttPwd("pwd", "mqtt password", mqttPwd, 64);
 void loadParametersfromJSON(DynamicJsonDocument json)
 {
   /* common */
-  if (json.containsKey("deviceLocation")) strcpy(deviceLocation, json["deviceLocation"]);
-  if (json.containsKey("mqttServer"))     strcpy(mqttServer, json["mqttServer"]);
-  if (json.containsKey("mqttPort"))     strcpy(mqttPort, json["mqttPort"]);
-  if (json.containsKey("mqttUser"))    strcpy(mqttUser, json["mqttUser"]);
-  if (json.containsKey("mqttPwd"))   strcpy(mqttPwd, json["mqttPwd"]);
+  if (json.containsKey("deviceLocation"))  strcpy(deviceLocation, json["deviceLocation"]);
+  if (json.containsKey("mqttServer"))      strcpy(mqttServer, json["mqttServer"]);
+  if (json.containsKey("mqttPort"))        strcpy(mqttPort, json["mqttPort"]);
+  if (json.containsKey("mqttUser"))        strcpy(mqttUser, json["mqttUser"]);
+  if (json.containsKey("mqttPwd"))        strcpy(mqttPwd, json["mqttPwd"]);
+
 }
 
 // save parameters to a JSON object so they can saved to disk
 DynamicJsonDocument saveParametersToJSON()
 {
+  //JsonObject &json = jsonBuffer.createObject();
   DynamicJsonDocument json(200);
   /* common */
   json["deviceLocation"] = deviceLocation;
@@ -90,12 +93,14 @@ DynamicJsonDocument saveParametersToJSON()
 // load parameters into webserver custom data slots
 void loadParametersToWeb(WiFiManager* wfm)
 {
-
+  /* common */
   wfm->addParameter(&custom_deviceLocation);
   wfm->addParameter(&custom_mqttServer);
   wfm->addParameter(&custom_mqttPort);
   wfm->addParameter(&custom_mqttUser);
   wfm->addParameter(&custom_mqttPwd);
+
+  /* custom */
 }
 
 // this is called by the SUBMIT action of the webserver
@@ -144,6 +149,7 @@ void tickOFF()
 }
 
 
+
 /*
  * ********************************************************************************
  * This routine will check the Wifi status, and reset the ESP is unable to connect
@@ -165,13 +171,15 @@ void checkConnection()
       delay(5000);
     }
   }
-
-  MDNS.update(); // and refresh mDNS
+  
+  MDNS.update();      // and refresh mDNS
 
   // handle OTA -- if in progress stop talking to the heat pump and console so as not to disturb the upload
   // THIS NEEDS TO BE THE FIRST ITEM IN LOOP
   ArduinoOTA.handle();
+
 }
+
 
 /*
  * ********************************************************************************
@@ -193,8 +201,7 @@ void readConfigFromDisk()
       //file exists, reading and loading
       //console.println("reading config file");
       File configFile = LittleFS.open("/config.json", "r");
-      if (configFile)
-      {
+      if (configFile) {
         //console.println("opened config file");
         size_t size = configFile.size();
         // Allocate a buffer to store contents of the file.
@@ -207,11 +214,12 @@ void readConfigFromDisk()
         {
           loadParametersfromJSON(json);
         }
-        else
+        else 
         {
           console.println("failed to load json config");
         }
         configFile.close();
+
       }
     }
   }
@@ -220,6 +228,7 @@ void readConfigFromDisk()
     console.println("failed to mount FS");
   }
   //end read
+
 }
 /*
  * ********************************************************************************
@@ -231,19 +240,20 @@ void readConfigFromDisk()
 void writeConfigToDisk()
 {
 
+
   File configFile = LittleFS.open("/config.json", "w");
-  if (!configFile)
-  {
+  if (!configFile) {
     console.println("failed to open config file for writing");
   }
   else
   {
     DynamicJsonDocument json = saveParametersToJSON();
-    serializeJson(json, configFile);
+    serializeJson(json,configFile);
     configFile.close();
     console.println("config saved to disk");
   }
 }
+
 
 /*
  * ********************************************************************************
@@ -259,6 +269,7 @@ void configureESP()
 
   readConfigFromDisk();
 
+
   //WiFiManager
   //Local intialization. Once its business is done, there is no need to keep it around
   WiFiManager wifiManager;
@@ -266,8 +277,9 @@ void configureESP()
   // don't output shit in Serial port -- it messes with heatpump
   wifiManager.setDebugOutput(false);
 
+
   //set callback that gets called when connecting to previous WiFi fails, and enters Access Point mode
-  wifiManager.setAPCallback([](WiFiManager *myWIFI) {
+  wifiManager.setAPCallback([](WiFiManager * myWIFI) {
     console.println("Entered config mode");
     console.println(WiFi.localIP().toString());
     //if you used auto generated SSID, print it
@@ -306,8 +318,7 @@ void configureESP()
   //if it does not connect it starts an access point with the specified name
   //here  "AutoConnectAP"
   //and goes into a blocking loop awaiting configuration
-  if (!wifiManager.autoConnect(myHostName))
-  {
+  if (!wifiManager.autoConnect(myHostName)) {
     console.println("failed to connect and hit timeout");
     delay(3000);
     //reset and try again, or maybe put it to deep sleep
@@ -322,17 +333,17 @@ void configureESP()
   secondsWithoutWIFI = 0;
   wticker.detach();
   tickOFF();
+  
 
   // configure mDNS so we can reach it via .local (sometimes)
-  if (!MDNS.begin(myHostName))
-  {
+  if (!MDNS.begin(myHostName)) {
     console.println("Error setting up MDNS responder!");
   }
   else
   {
     MDNS.addService("telnet", "tcp", 23); // Announce telnet tcp service on port 8080
     //MDNS.addServiceTxt(hMDNSService, "app_name", "CabinetsLED");
-    //MDNS.addServiceTxt(hMDNSService, "app_version", version;
+    //MDNS.addServiceTxt(hMDNSService, "app_version", version;    
     MDNS.update();
 
     console.println("mDNS responder started");
@@ -341,9 +352,11 @@ void configureESP()
   // and OTA
   configureOTA(myHostName);
 
+
   //if the portal changed the parameters then save the custom parameters to FS
-  if (shouldSaveConfig)
-    writeConfigToDisk();
+  if (shouldSaveConfig)  writeConfigToDisk();
+
+
 }
 
 /*

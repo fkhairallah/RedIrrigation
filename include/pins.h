@@ -19,7 +19,7 @@
 #define ZONE3 14 // BLUE
 #define ZONE4 12 // ORANGE
 #define ZONE5 13 //YELLOW
-//#define ZONE5 10 // BROWN -- NC
-#define NUMBER_OF_ZONES 5 // total number of zones
+#define ZONE6 15 // BROWN
+#define NUMBER_OF_ZONES 6 // total number of zones
 
 #endif
