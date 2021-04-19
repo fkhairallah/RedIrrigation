@@ -6,11 +6,11 @@ The hardware is designed to drive 6 zones even though only 5 are installed in Ry
 
 ## MQTT communication
 Each zone has a status topic and a command topics. It can accept the following commands:
-    - ON -- turn zone on for 60 minutes
-    - OFF -- turn zone off
-    - a number -- turn zone on for that many minutes
-    - winterize -- turn zone on for 15 seconds, then off for 5 minutes to allow compressor to recharge
-        this mode is on until it is turned off
+- ON -- turn zone on for 60 minutes
+- OFF -- turn zone off
+- a number -- turn zone on for that many minutes
+- winterize -- turn zone on for 15 seconds, then off for 5 minutes to allow compressor to recharge
+    this mode is on until it is turned off
 
 The state topic is updated after the command is executed and continues to to see an updated countdown of remaining time on.
 
