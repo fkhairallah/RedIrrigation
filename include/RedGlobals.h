@@ -25,10 +25,14 @@
 #define TEMPERATURE_PRECISION 9           // Lower resolution
 #endif
 
-#define VERSION "V0.2B"             // N.B: document changes in README.md
+#define VERSION "V0.9B"             // N.B: document changes in README.md
 #define MQTT_TOPIC_PREFIX "irrigation" // prefix for all MQTT topics
 
-// in WiFiConfigurations.ino
+// winterization variables: times in seconds zone is on & off
+#define WINTERIZE_ON   15
+#define WINTERIZE_OFF  5*60
+
+// in WiFiConfig
 extern char myHostName[];
 extern char deviceLocation[];
 extern char mqttServer[];
@@ -40,11 +44,8 @@ void checkConnection(); // check WIFI connection
 void writeConfigToDisk();
 void configureOTA(char *hostName);
 
-// in MQTT
-extern PubSubClient mqtt_client;
-extern char mqtt_topic[];
-extern char mqtt_debug_topic[];
-extern char mqtt_debug_set_topic[];
+// in MQTTConfig
+extern bool debugMode;
 void configureMQTT();
 bool checkMQTTConnection();
 void mqttDisconnect();
@@ -72,6 +73,7 @@ void winterizeZoneON();
 void winterizeZoneOFF();
 bool zoneON(int zone);
 bool zoneOFF(int zone);
+bool isZoneOn(int zone);
 
 // in RedIrrigation.cpp
 void ledON();

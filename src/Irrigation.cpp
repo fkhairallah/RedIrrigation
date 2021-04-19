@@ -6,14 +6,11 @@
 #include <RedGlobals.h>
 
 // Zone variables
-int zonePins[NUMBER_OF_ZONES] = {ZONE1, ZONE2, ZONE3, ZONE4, ZONE5};
+int zonePins[NUMBER_OF_ZONES] = {ZONE1, ZONE2, ZONE3, ZONE4, ZONE5, ZONE6};
 int zoneTime[NUMBER_OF_ZONES];
 Ticker zoneTimeTicker;
 
 
-// winterization variables
-#define WINTERIZE_ON 15
-#define WINTERIZE_OFF 5*60
 bool winterizeMode; // winterize or normal mode
 int winterizeZone;  // zone being winterized
 Ticker winterizeTimer; // timer to use while winterizing
@@ -44,36 +41,55 @@ void initializeIrrigation()
 
  * *********************************************************************************/
 
-void processIrrigationCommand(int zone, char* command)
+void processIrrigationCommand(int zone, char *command)
 {
 
   char str[128];
-  sprintf(str, "Zone %i received command %s", zone, command);
+  sprintf(str, "Zone %i received command %s", zone+1, command);
   console.println(str);
 
   // check for winterize command
-  if (strcmp(command, "winterize") == 0) {
+  if (strcmp(command, "winterize") == 0)
+  {
     winterizeON(zone);
+    reportZoneStatus(zone, command);
   }
   else
   {
     //if we have received a command while in winterize mode ==> turn it off
-    winterizeModeOFF();
+    if (winterizeMode) winterizeModeOFF();
 
-    // NB: strtol return 0 if not numeric. which shuts off the zone
-    long duration = strtol(command, NULL, 0);
-
-
-    if (duration <= 0) zoneOFF(zone);
-    else // turn it on for selected number of minutes
+    if (strcmp(command, "ON") == 0)
     {
-      zoneTime[zone] = duration;
+      zoneTime[zone] = 60;
       zoneON(zone);
     }
-  }
+    else if (strcmp(command, "OFF") == 0)
+    {
+      zoneTime[zone] = 0;
+      zoneOFF(zone);
+    }
+    else
 
-  // report status back
-  reportZoneStatus(zone, command);
+    {
+
+      // NB: strtol return 0 if not numeric. which shuts off the zone
+      long duration = strtol(command, NULL, 0);
+
+      if (duration <= 0)
+        zoneOFF(zone);
+      else // turn it on for selected number of minutes
+      {
+        zoneTime[zone] = duration;
+        zoneON(zone);
+      }
+    }
+    // report status back
+    char stt[10];
+    sprintf(stt, "%i", zoneTime[zone]);
+    reportZoneStatus(zone, stt);
+  }
+  
 }
 
 // this routine is invoked every minutes. It looks to see if any
@@ -82,11 +98,10 @@ void processIrrigationCommand(int zone, char* command)
 void irrigationTimer()
 {
   // do nothing if we are winterizing
-  if (winterizeMode)
-    return;
+  if (winterizeMode) return;
 
   // normal mode
-  console.println("zone timer...");
+  console.println("Irrigation timer...");
   tick(); // toggle LED
 
   for (int i = 0; i < NUMBER_OF_ZONES; i++)
@@ -102,9 +117,7 @@ void irrigationTimer()
       }
     }
     // update the status topic
-    //reportZoneStatus(i);
     char stt[10];
-    // update the status topic
     sprintf(stt, "%i", zoneTime[i]);
     reportZoneStatus(i, stt);
   }
@@ -122,9 +135,6 @@ void irrigationTimer()
 */
 void winterizeON(int zone)
 {
-  char str[128];
-  sprintf(str, "Winterizing Zone %i", zone);
-  console.println(str);
   winterizeTimer.detach();
 
   // First: turn off all zone
@@ -132,13 +142,18 @@ void winterizeON(int zone)
   {
     zoneTime[i] = 0;
     zoneOFF(i);
-    //reportZoneStatus(i);
+    //if (i != zone) reportZoneStatus(i,0);
+    //else reportZoneStatus(zone, "w");
   }
 
   winterizeMode = true;
   winterizeZone = zone;
   winterizeTimer.attach(5, winterizeZoneON);
 
+  char str[128];
+  sprintf(str, "Winterizing MODE ON - Zone %i", zone + 1);
+  console.println(str);
+  
 }
 
 // turn off winterize mode
@@ -147,16 +162,18 @@ void winterizeModeOFF()
   winterizeMode = false;
   winterizeZone = -1;
   winterizeTimer.detach();
-
+  char str[128];
+  sprintf(str, "Winterizing MODE OFF");
+  console.println(str);
 }
 
 // this routine is called by a winterizing timer
 // it turns the zone ON then fires a timer to call turn if off in WINTERIZE_ON seconds
 void winterizeZoneON()
 {
+  console.printf("Winterizing zone %i : ON\r\n", winterizeZone+1);
   winterizeTimer.detach();  // first detach the timer
   zoneON(winterizeZone);
-  ledON();
   winterizeTimer.attach(WINTERIZE_ON, winterizeZoneOFF);
 
 }
@@ -164,9 +181,9 @@ void winterizeZoneON()
 // it turns the zone ON then fires a timer to call turn if off in WINTERIZE_ON seconds
 void winterizeZoneOFF()
 {
-  winterizeTimer.detach();  // first detach the timer
+  console.printf("Winterizing zone %i : OFF\r\n", winterizeZone + 1);
+  winterizeTimer.detach(); // first detach the timer
   zoneOFF(winterizeZone);
-  ledOFF();
   winterizeTimer.attach(WINTERIZE_OFF, winterizeZoneON);
 }
 
@@ -181,8 +198,8 @@ bool zoneON(int zone)
   if ( (zone >= 0) && (zone < NUMBER_OF_ZONES) )
   {
     digitalWrite(zonePins[zone], LOW);
-    reportZoneStatus(zone, (char*)"ON");
-
+    if (!winterizeMode) 
+      reportZoneStatus(zone, (char*)"ON");
     return true;
   }
   else
@@ -197,8 +214,22 @@ bool zoneOFF(int zone)
   if ( (zone >= 0) && (zone < NUMBER_OF_ZONES) )
   {
     digitalWrite(zonePins[zone], HIGH);
-    reportZoneStatus(zone,(char*) "OFF");
+    if (!winterizeMode) 
+      reportZoneStatus(zone, (char *)"OFF");
     return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+// returns a boolean with the status of a zone
+bool isZoneOn(int zone)
+{
+  if ((zone >= 0) && (zone < NUMBER_OF_ZONES))
+  {
+    return !digitalRead(zonePins[zone]);
   }
   else
   {
