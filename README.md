@@ -16,10 +16,6 @@ After the command is executed, the _state topic_ is updated with the amount of t
 state topic continues to be updated as the timer counts down. 
 A state of **0** or **OFF** indicates that the zone is turned off.
 
-## Zone Layout
-![](./media/lawn.jpg)
-
-
 
 
 # Version History
@@ -42,7 +38,8 @@ When the relay is not energized, the zone is connected to the Orbit timer and ca
 If we command a zone on, relay energizes and connectes the zone to power.
 
 
-![](./media/schematics.jpg)
+![](./media/Schematics.jpg)
+
 
 ## ESP8266 Pins
 
@@ -56,3 +53,9 @@ If we command a zone on, relay energizes and connectes the zone to power.
 
 
 // ***BEWARE*** Some ESP8266 pins (15) are set to LOW during boot or flash which activates the relay
+
+## Zone Layout
+![](./media/lawn.jpg)
+
+
+
