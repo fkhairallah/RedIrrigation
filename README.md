@@ -12,7 +12,9 @@ Each zone has a status topic and a command topics. It can accept the following c
 - winterize -- turn zone on for 15 seconds, then off for 5 minutes to allow compressor to recharge
     this mode is on until it is turned off
 
-The state topic is updated after the command is executed and continues to to see an updated countdown of remaining time on.
+After the command is executed, the _state topic_ is updated with the amount of time, in minutes, the zone will stay on.
+state topic continues to be updated as the timer counts down. 
+A state of **0** or **OFF** indicates that the zone is turned off.
 
 ## Zone Layout
 ![](./media/lawn.jpg)
