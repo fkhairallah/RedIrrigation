@@ -33,6 +33,19 @@ A state of **0** or **OFF** indicates that the zone is turned off.
 
 # Hardware Notes
 
+## Block Diagram
+
+The irrigation system is installed so a dumb Orbit irrigation timer can be used in a pinch. Each zone is connected to the common pin of a SPDT relay. The Normally Connected terminal (NC) is wired into the Orbit Zone header. The Normally Open (NO) terminal is connected to power.
+
+When the relay is not energized, the zone is connected to the Orbit timer and can be turned on and off.
+
+If we command a zone on, relay energizes and connectes the zone to power.
+
+
+![](./media/schematics.jpg)
+
+## ESP8266 Pins
+
  Zone#, Pin, & Color:
 -  ZONE1 5  // RED
 -  ZONE2 4  // GREEN
