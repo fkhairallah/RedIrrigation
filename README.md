@@ -43,13 +43,15 @@ If we command a zone on, relay energizes and connectes the zone to power.
 
 ## ESP8266 Pins
 
- Zone#, Pin, & Color:
--  ZONE1 5  // RED
--  ZONE2 4  // GREEN
--  ZONE3 14 // BLUE
--  ZONE4 12 // ORANGE
--  ZONE5 13 //YELLOW
--  ZONE6 15 // BROWN
+   
+| Zone  | Pin  | Color  | Location        |
+|:---:|:---:|:---:|:---|
+| 1 | 5 | Red  |  Front of House |
+| 2 | 4  | GREEN | South Side  |
+| 3 | 14  | BLUE | Back Lawn  |
+| 4 | 12 | ORANGE | Rear Lawn |
+| 5 | 13 | YELLOW | Driveway |
+| 6 | 15 | BROWN | **Not Connected ** |
 
 
 // ***BEWARE*** Some ESP8266 pins (15) are set to LOW during boot or flash which activates the relay
