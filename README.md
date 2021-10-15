@@ -19,13 +19,17 @@ A state of **0** or **OFF** indicates that the zone is turned off.
 
 
 # Version History
-
-## 0.2 Beta
-    Migration to Platform.IO including JSON6
+## V1
+    after a full season of reliable performance -- We release.
+    Tweak to winterization timing: 5 minute cycle of which 30s is ON
 
 ## 0.9 RC
     Release candidate with full implementation of functionality including winterization
     to be installed in box under porch 4/19
+
+## 0.2 Beta
+    Migration to Platform.IO including JSON6
+
 
 # Hardware Notes
 

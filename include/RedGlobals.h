@@ -25,12 +25,12 @@
 #define TEMPERATURE_PRECISION 9           // Lower resolution
 #endif
 
-#define VERSION "V0.9B"             // N.B: document changes in README.md
+#define VERSION "V1"             // N.B: document changes in README.md
 #define MQTT_TOPIC_PREFIX "irrigation" // prefix for all MQTT topics
 
 // winterization variables: times in seconds zone is on & off
-#define WINTERIZE_ON   15
-#define WINTERIZE_OFF  5*60
+#define WINTERIZE_ON   30
+#define WINTERIZE_OFF  (5*60 - WINTERIZE_ON)
 
 // in WiFiConfig
 extern char myHostName[];
